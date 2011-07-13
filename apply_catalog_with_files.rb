@@ -1,9 +1,11 @@
-#!/usr/bin/ruby
+#!/opt/puppet/bin/ruby
 #
 # Copyright PuppetLabs 2010
 
 require 'trollop'
 require 'pp'
+require 'sha1'
+require 'puppet'
 
 apply_opts = ""
 # obtain list of options to pass to puppet apply
@@ -30,19 +32,32 @@ EOS
       :short => '-n',
       :type => :string
   opt :options, 'Options for puppet apply',
-      :short => '-o',
+      :short => '-o'
   opt :report, 'Enable store report.',
       :short => '-r'
   opt :verbose, 'Enable debug mode.',
       :short => '-v'
 end
 
-dir = opts[:extractdir]
+dir = opts[:extractdir] + "/puppet-compiled-#{SHA1.sha1(opts[:nodefile]).to_s}"
 apply_opts += ' --report --reports=store' if opts[:report]
 
 nodefile = opts[:nodefile]
 nodefile =~ /(.*)\.compiled_catalog_with_files/
 nodename = $1
+
+puts "Generating extraction directory manifest" if opts[:verbose]
+Puppet::Util::Log.newdestination(:console)
+temp_manifest = "/tmp/puppet-compiled-#{Process.pid}.pp"
+File.open(temp_manifest, 'w') do |f|
+  filename = dir
+  until filename == '/'
+    f.write("#{Puppet::Resource.new( 'file', filename, :parameters => { :ensure => 'directory' } ).to_manifest}\n")
+  filename = File.dirname(filename)
+  end
+end
+puts "Applying extraction manifest" if opts[:verbose]
+Kernel.system("puppet apply #{apply_opts} #{temp_manifest}")
 
 puts "Extracting:\ntar -xf #{nodefile} -C #{dir}" if opts[:verbose]
 Kernel.system("tar -xf #{nodefile} -C #{dir}")
@@ -55,8 +70,5 @@ Kernel.system("puppet apply #{apply_opts} --apply #{dir}/#{nodename}.catalog.pso
 
 # Cleanup files
 puts "Cleanup:" if opts[:verbose]
-files = %x[tar -tf #{nodefile}].split("\n")
-files.each do |f|
-  puts "remove #{dir}/#{f}" if opts[:verbose]
-  File.delete("#{dir}/#{f}")
-end
+Puppet::Resource.new('file', dir, :parameters => { :ensure => :absent, :recurse => true, :force => true }).save(['file', dir].join('/'))
+Puppet::Resource.new('file', temp_manifest, :parameters => { :ensure => :absent }).save(['file', temp_manifest].join('/'))
