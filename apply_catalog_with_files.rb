@@ -4,7 +4,6 @@
 
 require 'trollop'
 require 'pp'
-require 'sha1'
 require 'puppet'
 
 apply_opts = ""
@@ -39,7 +38,7 @@ EOS
       :short => '-v'
 end
 
-dir = opts[:extractdir] + "/puppet-compiled-#{SHA1.sha1(opts[:nodefile]).to_s}"
+dir = opts[:extractdir] + "/puppet-compiled-#{Proccess.pid}"
 apply_opts += ' --report --reports=store' if opts[:report]
 
 nodefile = opts[:nodefile]
