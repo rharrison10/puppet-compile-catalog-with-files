@@ -1,4 +1,4 @@
-#!/usr/bin/ruby
+#!/opt/puppet/bin/ruby
 #
 # Copyright PuppetLabs 2010
 
