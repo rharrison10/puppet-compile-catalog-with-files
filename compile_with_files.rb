@@ -2,17 +2,22 @@
 require 'getoptlong'
 opts = GetoptLong.new(
   [ '--node',           '-n', GetoptLong::OPTIONAL_ARGUMENT ],
+  [ '--manifest',             GetoptLong::OPTIONAL_ARGUMENT ],
   [ '--modulepath',     '-m', GetoptLong::OPTIONAL_ARGUMENT ],
   [ '--external_nodes', '-e', GetoptLong::OPTIONAL_ARGUMENT ]
 )
 
 require 'puppet'
 
-node, external_nodes, modulepath = 'default', nil, Puppet[:modulepath]
+Puppet.settings.parse
+
+node, external_nodes, modulepath, manifest = 'default', nil, Puppet[:modulepath], Puppet[:manifest]
 opts.each do |opt, arg|
   case opt
     when '--node'
       node = arg
+    when '--manifest'
+      manifest = arg
     when '--modulepath'
       modulepath = arg
     when '--external_nodes'
@@ -20,6 +25,7 @@ opts.each do |opt, arg|
   end
 end
 
+Puppet[:manifest] = manifest
 Puppet[:modulepath] = modulepath
 
 # tell puppet to get facts from yaml
