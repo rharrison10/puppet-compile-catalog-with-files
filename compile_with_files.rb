@@ -4,14 +4,18 @@ opts = GetoptLong.new(
   [ '--node',           '-n', GetoptLong::OPTIONAL_ARGUMENT ],
   [ '--manifest',             GetoptLong::OPTIONAL_ARGUMENT ],
   [ '--modulepath',     '-m', GetoptLong::OPTIONAL_ARGUMENT ],
-  [ '--external_nodes', '-e', GetoptLong::OPTIONAL_ARGUMENT ]
+  [ '--external_nodes', '-e', GetoptLong::OPTIONAL_ARGUMENT ],
+  [ '--debug',          '-d', GetoptLong::OPTIONAL_ARGUMENT ]
 )
 
 require 'puppet'
 
 Puppet.settings.parse
 
-node, external_nodes, modulepath, manifest = 'default', nil, Puppet[:modulepath], Puppet[:manifest]
+node, external_nodes, = 'default', nil
+modulepath, manifest = Puppet[:modulepath], Puppet[:manifest]
+
+debug = false
 opts.each do |opt, arg|
   case opt
     when '--node'
@@ -22,6 +26,8 @@ opts.each do |opt, arg|
       modulepath = arg
     when '--external_nodes'
       external_nodes = arg
+  when '--debug'
+    debug = true
   end
 end
 
@@ -81,7 +87,10 @@ end
 #paths = paths.select {|path| File.exist?(path)}
 require 'pp'
 pp paths
-puts compiled_catalog_pson_string
+
+if debug
+  puts compiled_catalog_pson_string
+end
 
 catalog_file = File.new("#{node}.catalog.pson", "w")
 catalog_file.write compiled_catalog_pson_string
