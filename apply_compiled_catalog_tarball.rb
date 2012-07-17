@@ -7,4 +7,4 @@ nodename = $1
 `tar -xvPf #{nodefile}`
 modulepath = File.open("#{nodename}.modulepath").readlines.first
 
-`puppet --debug --apply #{nodename}.catalog.pson --modulepath #{modulepath}`
+`puppet apply --debug --apply #{nodename}.catalog.pson --modulepath '#{modulepath}'`
