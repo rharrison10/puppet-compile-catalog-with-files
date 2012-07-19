@@ -1,8 +1,8 @@
-#!/opt/puppet/bin/ruby
+#!/usr/bin/env ruby
 #
 # Copyright PuppetLabs 2010
 
-require 'trollop'
+require_relative 'trollop'
 require 'puppet'
 require 'pp'
 
