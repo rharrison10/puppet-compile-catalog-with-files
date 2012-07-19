@@ -46,7 +46,7 @@ EOS
       :short => '-v'
 end
 
-dir = opts[:extractdir] + "/puppet-compiled-#{Proccess.pid}"
+dir = opts[:extractdir] + "/puppet-compiled-#{Process.pid}"
 apply_opts += ' --report --reports=store' if opts[:report]
 
 nodefile = opts[:nodefile]
