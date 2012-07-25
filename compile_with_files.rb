@@ -14,6 +14,7 @@ opts = GetoptLong.new(
 
 # Set some defaults
 node, external_nodes, debug = 'default', nil, false
+confdir, manifest, modulepath, vardir = nil
 
 opts.each do |opt, arg|
   case opt
