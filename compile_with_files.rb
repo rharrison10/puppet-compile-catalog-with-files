@@ -1,38 +1,56 @@
 #!/usr/bin/env ruby
 require 'getoptlong'
+require 'puppet'
+
 opts = GetoptLong.new(
   [ '--node',           '-n', GetoptLong::OPTIONAL_ARGUMENT ],
-  [ '--manifest',             GetoptLong::OPTIONAL_ARGUMENT ],
-  [ '--modulepath',     '-m', GetoptLong::OPTIONAL_ARGUMENT ],
+  [ '--confdir',        '-c', GetoptLong::OPTIONAL_ARGUMENT ],
+  [ '--manifest',       '-m', GetoptLong::OPTIONAL_ARGUMENT ],
+  [ '--modulepath',     '-p', GetoptLong::OPTIONAL_ARGUMENT ],
+  [ '--vardir',         '-v', GetoptLong::OPTIONAL_ARGUMENT ],
   [ '--external_nodes', '-e', GetoptLong::OPTIONAL_ARGUMENT ],
   [ '--debug',          '-d', GetoptLong::OPTIONAL_ARGUMENT ]
 )
 
-require 'puppet'
+# Set some defaults
+node, external_nodes, debug = 'default', nil, false
 
-Puppet.settings.parse
-
-node, external_nodes, = 'default', nil
-modulepath, manifest = Puppet[:modulepath], Puppet[:manifest]
-
-debug = false
 opts.each do |opt, arg|
   case opt
     when '--node'
       node = arg
+    when '--confdir'
+      confdir = arg
     when '--manifest'
       manifest = arg
     when '--modulepath'
       modulepath = arg
     when '--external_nodes'
       external_nodes = arg
-  when '--debug'
-    debug = true
+    when '--vardir'
+      vardir = arg
+    when '--debug'
+      debug = true
   end
 end
 
-Puppet[:manifest] = manifest
-Puppet[:modulepath] = modulepath
+if confdir
+  Puppet[:confdir] = confdir
+end
+
+Puppet.settings.parse
+
+if manifest
+  Puppet[:manifest] = manifest
+end
+
+if modulepath
+  Puppet[:modulepath] = modulepath
+end
+
+if vardir
+  Puppet[:vardir] = vardir
+end
 
 # tell puppet to get facts from yaml
 Puppet::Node::Facts.terminus_class = :yaml
