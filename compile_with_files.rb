@@ -39,7 +39,7 @@ if confdir
   Puppet[:confdir] = confdir
 end
 
-Puppet.settings.parse
+Puppet.initialize_settings
 
 if manifest
   Puppet[:manifest] = manifest
@@ -54,7 +54,7 @@ if vardir
 end
 
 # tell puppet to get facts from yaml
-Puppet::Node::Facts.terminus_class = :yaml
+# Puppet::Node::Facts.terminus_class = :yaml
 
 if external_nodes
   # use the external nodes tool - should read from puppet's puppet.conf
@@ -67,7 +67,7 @@ end
 # so it ends up using clientyamldir
 Puppet[:clientyamldir] = Puppet[:yamldir]
 begin
-  unless compiled_catalog = Puppet::Resource::Catalog.find(node)
+  unless compiled_catalog = Puppet::Resource::Catalog.indirection.find(node)
     raise "Could not compile catalog for #{node}"
   end
   compiled_catalog_pson_string = compiled_catalog.to_pson
@@ -75,7 +75,7 @@ begin
   paths = compiled_catalog.vertices.
       select {|vertex| vertex.type == "File" and vertex[:source] =~ %r{puppet://}}.
       map do |file_resource|
-        file_metadata = Puppet::FileServing::Metadata.find(file_resource[:source])
+        file_metadata = Puppet::FileServing::Metadata.indirection.find(file_resource[:source])
         puts "The file #{file_resource[:source]} is not accessible" if file_metadata.nil?
         file_metadata
       end.
@@ -115,7 +115,7 @@ catalog_file = File.new("#{node}.catalog.pson", "w")
 catalog_file.write compiled_catalog_pson_string
 catalog_file.close
 
-File.open("#{node}.modulepath", 'w') {|f| f.write(modulepath)}
+File.open("#{node}.modulepath", 'w') {|f| f.write(Puppet[:modulepath])}
 
 tarred_filename = "#{node}.compiled_catalog_with_files.tar.gz"
 `tar -cPzf #{tarred_filename} #{catalog_file.path} #{node}.modulepath #{paths.join(' ')}`
