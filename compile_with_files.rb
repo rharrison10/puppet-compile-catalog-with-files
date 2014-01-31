@@ -39,7 +39,7 @@ if confdir
   Puppet[:confdir] = confdir
 end
 
-Puppet.initialize_settings
+Puppet.initialize_settings_for_run_mode(:master)
 
 if manifest
   Puppet[:manifest] = manifest
@@ -88,26 +88,13 @@ rescue => detail
   exit(30)
 end
 
-## This was my first attempt to retrieve file paths from the catalog, but requires some parsing of
-## the already compiled catalog that I'm not sure is reliable
-#compiled_catalog_pson_string = `puppet master --modulepath #{modulepath} --compile #{node}`
-## strip notices and warnings http://projects.puppetlabs.com/issues/2527
-#compiled_catalog_pson_string = compiled_catalog_pson_string.split("\n").reject {|line| line =~ /warning:|notice:/}
-#
-#module_files = {}
-#compiled_catalog_pson_string.each do |line|
-#  module_files[$1] = $2 if line =~ %r{source.*puppet:///modules/(\w+)/(.*)"$}
-#end
-#
-#paths = module_files.map do |module_name, file_name|
-#  "#{modulepath}/#{module_name}/files/#{file_name}"
-#end
-#
-#paths = paths.select {|path| File.exist?(path)}
-require 'pp'
-pp paths
-
 if debug
+  require 'pp'
+
+  puts "Outputting the files to include in the tarball\n\n"
+  pp paths
+
+  puts "Outputting the compiled catalog\n\n"
   puts compiled_catalog_pson_string
 end
 
