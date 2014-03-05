@@ -5,6 +5,7 @@ require 'puppet'
 opts = GetoptLong.new(
   [ '--node',           '-n', GetoptLong::OPTIONAL_ARGUMENT ],
   [ '--confdir',        '-c', GetoptLong::OPTIONAL_ARGUMENT ],
+  [ '--environment',    '-e', GetoptLong::OPTIONAL_ARGUMENT ],
   [ '--manifest',       '-m', GetoptLong::OPTIONAL_ARGUMENT ],
   [ '--modulepath',     '-p', GetoptLong::OPTIONAL_ARGUMENT ],
   [ '--vardir',         '-v', GetoptLong::OPTIONAL_ARGUMENT ],
@@ -40,6 +41,11 @@ if confdir
 end
 
 Puppet.initialize_settings_for_run_mode(:master)
+
+if debug
+  Puppet::Util::Log.level = :debug
+  Puppet::Util::Log.newdestination(:console)
+end
 
 if manifest
   Puppet[:manifest] = manifest
