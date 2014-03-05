@@ -9,13 +9,13 @@ opts = GetoptLong.new(
   [ '--manifest',       '-m', GetoptLong::OPTIONAL_ARGUMENT ],
   [ '--modulepath',     '-p', GetoptLong::OPTIONAL_ARGUMENT ],
   [ '--vardir',         '-v', GetoptLong::OPTIONAL_ARGUMENT ],
-  [ '--external_nodes', '-e', GetoptLong::OPTIONAL_ARGUMENT ],
+  [ '--external_nodes', '-x', GetoptLong::OPTIONAL_ARGUMENT ],
   [ '--debug',          '-d', GetoptLong::OPTIONAL_ARGUMENT ]
 )
 
 # Set some defaults
 node, external_nodes, debug = 'default', nil, false
-confdir, manifest, modulepath, vardir = nil
+confdir, environment, manifest, modulepath, vardir = nil
 
 opts.each do |opt, arg|
   case opt
@@ -23,6 +23,8 @@ opts.each do |opt, arg|
       node = arg
     when '--confdir'
       confdir = arg
+    when '--environment'
+      environment = arg
     when '--manifest'
       manifest = arg
     when '--modulepath'
@@ -49,6 +51,10 @@ end
 
 if manifest
   Puppet[:manifest] = manifest
+end
+
+if environment
+  Puppet[:environment] = environment
 end
 
 if modulepath
@@ -101,7 +107,7 @@ if debug
   pp paths
 
   puts "Outputting the compiled catalog\n\n"
-  puts compiled_catalog_pson_string
+  pp compiled_catalog
 end
 
 catalog_file = File.new("#{node}.catalog.pson", "w")
